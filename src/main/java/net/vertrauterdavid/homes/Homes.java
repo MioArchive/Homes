@@ -58,7 +58,6 @@ public class Homes extends JavaPlugin {
         new HomeCommand("home");
     }
 
-    onDi
 
     public void openInventory(Player player) {
         int maxHomes = getConfig().getInt("Settings.MaxHomes", 5);
