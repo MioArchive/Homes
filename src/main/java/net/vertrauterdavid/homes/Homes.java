@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 
 @Getter
+@SuppressWarnings("deprecation")
 public class Homes extends JavaPlugin {
 
     @Getter
