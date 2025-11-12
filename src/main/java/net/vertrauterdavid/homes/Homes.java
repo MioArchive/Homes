@@ -6,6 +6,7 @@ import net.vertrauterdavid.homes.database.SqlConnection;
 import net.vertrauterdavid.homes.listener.InventoryClickListener;
 import net.vertrauterdavid.homes.listener.PlayerJoinListener;
 import net.vertrauterdavid.homes.util.*;
+import net.vertrauterdavid.homes.util.inventory.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -41,6 +42,8 @@ public class Homes extends JavaPlugin {
         sqlConnection = new SqlConnection();
         sqlConnection.setup();
         sqlConnection.createTables();
+
+        InventoryManager.register(instance);
 
         homeUtil = new HomeUtil();
 
