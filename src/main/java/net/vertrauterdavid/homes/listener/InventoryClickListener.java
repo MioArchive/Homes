@@ -23,7 +23,7 @@ public class InventoryClickListener implements Listener {
         Inventory inventory = event.getInventory();
         InventoryView view = event.getView();
 
-        if (view.getTitle().equalsIgnoreCase(ConfigUtil.translateColorCodes(Homes.getInstance().getConfig().getString("Gui.Title", "Homes")))) {
+        if (view.getTitle().equalsIgnoreCase(ConfigUtil.translateColorLEG(Homes.getInstance().getConfig().getString("Gui.Title", "Homes")))) {
             event.setCancelled(true);
 
             int maxHomes = Homes.getInstance().getConfig().getInt("Settings.MaxHomes", 5);
@@ -58,7 +58,7 @@ public class InventoryClickListener implements Listener {
             }
         }
 
-        if (view.getTitle().startsWith(ConfigUtil.translateColorCodes(Homes.getInstance().getConfig().getString("DeleteGui.Title", "Homes")))) {
+        if (view.getTitle().startsWith(ConfigUtil.translateColorLEG(Homes.getInstance().getConfig().getString("DeleteGui.Title", "Homes")))) {
             event.setCancelled(true);
 
             try {

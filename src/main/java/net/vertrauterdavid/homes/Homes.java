@@ -2,6 +2,7 @@ package net.vertrauterdavid.homes;
 
 import lombok.Getter;
 import net.vertrauterdavid.homes.command.HomeCommand;
+import net.vertrauterdavid.homes.database.SqlConnection;
 import net.vertrauterdavid.homes.listener.InventoryClickListener;
 import net.vertrauterdavid.homes.listener.PlayerJoinListener;
 import net.vertrauterdavid.homes.util.*;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -20,7 +22,8 @@ public class Homes extends JavaPlugin {
 
     @Getter
     private static Homes instance;
-    private SqlUtil sqlUtil;
+    private SqlConnection sqlConnection;
+
     private HomeUtil homeUtil;
 
     private ItemUtil setItem;
@@ -33,10 +36,12 @@ public class Homes extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-
         instance = this;
-        sqlUtil = new SqlUtil(getConfig().getString("Sql.Host"), getConfig().getString("Sql.Port"), getConfig().getString("Sql.Database"), getConfig().getString("Sql.Username"), getConfig().getString("Sql.Password"));
-        sqlUtil.update("CREATE TABLE IF NOT EXISTS Homes (UUID VARCHAR(100) NOT NULL, Home1 VARCHAR(100) NOT NULL DEFAULT '-', Home2 VARCHAR(100) NOT NULL DEFAULT '-', Home3 VARCHAR(100) NOT NULL DEFAULT '-', Home4 VARCHAR(100) NOT NULL DEFAULT '-', Home5 VARCHAR(100) NOT NULL DEFAULT '-', Home6 VARCHAR(100) NOT NULL DEFAULT '-', Home7 VARCHAR(100) NOT NULL DEFAULT '-');");
+
+        sqlConnection = new SqlConnection();
+        sqlConnection.setup();
+        sqlConnection.createTables();
+
         homeUtil = new HomeUtil();
 
         setItem = getConfigItem("Gui.Items.Set");
@@ -46,16 +51,18 @@ public class Homes extends JavaPlugin {
         bedItem = getConfigItem("DeleteGui.Items.Bed");
         cancelItem = getConfigItem("DeleteGui.Items.Cancel");
 
-        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), instance);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), instance);
 
         new HomeCommand("homes");
         new HomeCommand("home");
     }
 
+    onDi
+
     public void openInventory(Player player) {
         int maxHomes = getConfig().getInt("Settings.MaxHomes", 5);
-        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("Gui.Rows", 3) * 9, ConfigUtil.translateColorCodes(getConfig().getString("Gui.Title", "Homes")));
+        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("Gui.Rows", 3) * 9, ConfigUtil.translateColorLEG(getConfig().getString("Gui.Title", "Homes")));
 
         for (int i = 1; i <= maxHomes; i++) {
             int slot = i + (maxHomes == 5 ? 1 : 0) + (inventory.getSize() == 27 ? 9 : 18);
@@ -71,7 +78,7 @@ public class Homes extends JavaPlugin {
     }
 
     public void openDeleteInventory(Player player, int home) {
-        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("DeleteGui.Rows", 3) * 9, ConfigUtil.translateColorCodes(getConfig().getString("DeleteGui.Title", "Homes")) + " " + home);
+        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("DeleteGui.Rows", 3) * 9, ConfigUtil.translateColorLEG(getConfig().getString("DeleteGui.Title", "Homes")) + " " + home);
 
         inventory.setItem(getConfig().getInt("DeleteGui.Items.Confirm.Slot", 11), confirmItem.toItemStack());
         if (getConfig().getBoolean("DeleteGui.Items.Bed.Enabled", true)) {
@@ -84,10 +91,10 @@ public class Homes extends JavaPlugin {
     }
 
     private ItemUtil getConfigItem(String path) {
-        Material material = Material.valueOf(ConfigUtil.translateColorCodes(getConfig().getString(path + ".Material")));
-        String name = ConfigUtil.translateColorCodes(getConfig().getString(path + ".Name"));
+        Material material = Material.valueOf(ConfigUtil.translateColorLEG(getConfig().getString(path + ".Material")));
+        String name = ConfigUtil.translateColorLEG(getConfig().getString(path + ".Name"));
         List<String> lore = getConfig().getStringList(path + ".Lore");
-        return new ItemUtil(material).setName(name).setLore(lore.stream().map(ConfigUtil::translateColorCodes).toArray(String[]::new));
+        return new ItemUtil(material).setName(name).setLore(lore.stream().map(ConfigUtil::translateColorLEG).toArray(String[]::new));
     }
 
     private ItemStack getSetItem(int home) {
@@ -106,24 +113,11 @@ public class Homes extends JavaPlugin {
         return new ItemUtil(bedItem).setName(bedItem.getItemMeta().getDisplayName().replaceAll("%home%", String.valueOf(home))).toItemStack();
     }
 
-    public int getAmount(Player player) {
-        if (player.hasPermission("homes.7")) {
-            return 7;
-        }
-        if (player.hasPermission("homes.6")) {
-            return 6;
-        }
-        if (player.hasPermission("homes.5")) {
-            return 5;
-        }
-        if (player.hasPermission("homes.4")) {
-            return 4;
-        }
-        if (player.hasPermission("homes.3")) {
-            return 3;
-        }
-        if (player.hasPermission("homes.2")) {
-            return 2;
+    public int getAmount(final @NotNull Player player) {
+        for (int i = 7; i >= 1; i--) {
+            if (player.hasPermission("homes." + i)) {
+                return i;
+            }
         }
         return 1;
     }

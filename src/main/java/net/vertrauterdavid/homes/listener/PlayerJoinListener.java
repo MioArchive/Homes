@@ -10,12 +10,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 public class PlayerJoinListener implements Listener {
 
     @EventHandler
-    public void handle(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        final Player player = event.getPlayer();
 
         Bukkit.getScheduler().runTaskAsynchronously(Homes.getInstance(), () -> {
-            if (!(Homes.getInstance().getSqlUtil().get("Homes", "UUID", "UUID='" + player.getUniqueId().toString() + "'").equalsIgnoreCase(player.getUniqueId().toString()))) {
-                Homes.getInstance().getSqlUtil().update("INSERT INTO Homes (UUID) VALUES ('" + player.getUniqueId().toString() + "')");
+            if (!(Homes.getInstance().getSqlConnection().get("Homes", "UUID", "UUID='" + player.getUniqueId() + "'").equalsIgnoreCase(player.getUniqueId().toString()))) {
+                Homes.getInstance().getSqlConnection().update("INSERT INTO Homes (UUID) VALUES ('" + player.getUniqueId() + "')");
             }
             Homes.getInstance().getHomeUtil().loadLocal(player.getUniqueId());
         });

@@ -15,7 +15,7 @@ public class HomeUtil {
     private final HashMap<String, String> localStorage = new HashMap<>();
 
     public HomeUtil() {
-        ResultSet resultSet = Homes.getInstance().getSqlUtil().getResult("SELECT * FROM Homes");
+        ResultSet resultSet = Homes.getInstance().getSqlConnection().getResult("SELECT * FROM Homes");
         try {
             while (resultSet.next()) {
                 localStorage.put(resultSet.getString("UUID") + "-1", resultSet.getString("Home1"));
@@ -30,7 +30,7 @@ public class HomeUtil {
     }
 
     public void loadLocal(UUID uuid) {
-        ResultSet resultSet = Homes.getInstance().getSqlUtil().getResult("SELECT * FROM Homes WHERE UUID='" + uuid.toString() + "'");
+        ResultSet resultSet = Homes.getInstance().getSqlConnection().getResult("SELECT * FROM Homes WHERE UUID='" + uuid.toString() + "'");
         try {
             while (resultSet.next()) {
                 localStorage.put(uuid + "-1", resultSet.getString("Home1"));
@@ -46,12 +46,12 @@ public class HomeUtil {
 
     public void set(UUID uuid, int number, Location location) {
         String s = location.getWorld().getName() + "/" + (location.getBlockX() + 0.5) + "/" + location.getBlockY() + "/" + (location.getBlockZ() + 0.5) + "/" + (Math.round(location.getYaw() / 45) * 45);
-        Homes.getInstance().getSqlUtil().update("UPDATE Homes SET Home" + number + "='" + s + "' WHERE UUID='" + uuid.toString() + "'");
+        Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + number + "='" + s + "' WHERE UUID='" + uuid.toString() + "'");
         localStorage.put(uuid + "-" + number, s);
     }
 
     public void delete(UUID uuid, int number) {
-        Homes.getInstance().getSqlUtil().update("UPDATE Homes SET Home" + number + "='-' WHERE UUID='" + uuid.toString() + "'");
+        Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + number + "='-' WHERE UUID='" + uuid.toString() + "'");
         localStorage.put(uuid + "-" + number, "-");
     }
 
@@ -60,7 +60,7 @@ public class HomeUtil {
         if (localStorage.containsKey(uuid + "-" + number)) {
             s = localStorage.get(uuid + "-" + number);
         } else {
-            s = Homes.getInstance().getSqlUtil().get("Homes", "Home" + number, "UUID='" + uuid.toString() + "'");
+            s = Homes.getInstance().getSqlConnection().get("Homes", "Home" + number, "UUID='" + uuid.toString() + "'");
             localStorage.put(uuid + "-" + number, s);
         }
 
