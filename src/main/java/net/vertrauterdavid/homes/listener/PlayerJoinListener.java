@@ -17,7 +17,7 @@ public class PlayerJoinListener implements Listener {
             if (!(Homes.getInstance().getSqlConnection().get("Homes", "UUID", "UUID='" + player.getUniqueId() + "'").equalsIgnoreCase(player.getUniqueId().toString()))) {
                 Homes.getInstance().getSqlConnection().update("INSERT INTO Homes (UUID) VALUES ('" + player.getUniqueId() + "')");
             }
-            Homes.getInstance().getHomeUtil().loadLocal(player.getUniqueId());
+            Homes.getInstance().getHomeManager().loadLocal(player.getUniqueId());
         });
     }
 

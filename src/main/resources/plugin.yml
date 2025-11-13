@@ -6,7 +6,3 @@ author: VertrauterDavid, JavaMio
 website: https://vertrauterdavid.net/ & https://github.com/vertrauterdavid/
 folia-supported: true
 description: Fully customizable MySQL-based home system for Minecraft servers.
-
-commands:
-  homes:
-  home:

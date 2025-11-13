@@ -1,51 +1,61 @@
 package net.vertrauterdavid.homes;
 
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPILogger;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import net.vertrauterdavid.homes.command.HomeCommand;
 import net.vertrauterdavid.homes.database.SqlConnection;
-import net.vertrauterdavid.homes.listener.InventoryClickListener;
 import net.vertrauterdavid.homes.listener.PlayerJoinListener;
-import net.vertrauterdavid.homes.util.*;
+import net.vertrauterdavid.homes.manager.HomeManager;
+import net.vertrauterdavid.homes.util.ConfigUtil;
 import net.vertrauterdavid.homes.util.inventory.InventoryManager;
+import net.vertrauterdavid.homes.util.inventory.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-@Getter
-@SuppressWarnings("deprecation")
+@Getter()
 public class Homes extends JavaPlugin {
+
+    private ItemBuilder setItem;
+    private ItemBuilder unSetItem;
+    private ItemBuilder noPermissionItem;
+    private ItemBuilder confirmItem;
+    private ItemBuilder bedItem;
+    private ItemBuilder cancelItem;
 
     @Getter
     private static Homes instance;
     private SqlConnection sqlConnection;
+    private HomeManager homeManager;
 
-    private HomeUtil homeUtil;
-
-    private ItemUtil setItem;
-    private ItemUtil unSetItem;
-    private ItemUtil noPermissionItem;
-    private ItemUtil confirmItem;
-    private ItemUtil bedItem;
-    private ItemUtil cancelItem;
+    @Override
+    public void onLoad() {
+        CommandAPI.setLogger(CommandAPILogger.fromJavaLogger(getLogger()));
+        CommandAPIBukkitConfig config = new CommandAPIBukkitConfig(this);
+        config.setNamespace("homes");
+        CommandAPI.onLoad(config);
+    }
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         instance = this;
 
+        CommandAPI.onEnable();
+
         sqlConnection = new SqlConnection();
         sqlConnection.setup();
         sqlConnection.createTables();
 
         InventoryManager.register(instance);
-
-        homeUtil = new HomeUtil();
+        homeManager = new HomeManager();
 
         setItem = getConfigItem("Gui.Items.Set");
         unSetItem = getConfigItem("Gui.Items.UnSet");
@@ -54,65 +64,22 @@ public class Homes extends JavaPlugin {
         bedItem = getConfigItem("DeleteGui.Items.Bed");
         cancelItem = getConfigItem("DeleteGui.Items.Cancel");
 
-        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), instance);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), instance);
 
-        new HomeCommand("homes");
-        new HomeCommand("home");
+        HomeCommand.register();
     }
 
-
-    public void openInventory(Player player) {
-        int maxHomes = getConfig().getInt("Settings.MaxHomes", 5);
-        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("Gui.Rows", 3) * 9, ConfigUtil.translateColorLEG(getConfig().getString("Gui.Title", "Homes")));
-
-        for (int i = 1; i <= maxHomes; i++) {
-            int slot = i + (maxHomes == 5 ? 1 : 0) + (inventory.getSize() == 27 ? 9 : 18);
-            if (getAmount(player) >= i) {
-                inventory.setItem(slot, (homeUtil.get(player.getUniqueId(), i) != null ? getSetItem(i) : getUnSetItem(i)));
-            } else {
-                inventory.setItem(slot, getNoPermissionItem(i));
-            }
-        }
-
-        player.openInventory(inventory);
-        ConfigUtil.playSound(player, "GuiSounds.OpenSound");
+    @Override
+    public void onDisable() {
+        CommandAPI.onDisable();
+        sqlConnection.close();
     }
 
-    public void openDeleteInventory(Player player, int home) {
-        Inventory inventory = Bukkit.createInventory(null, getConfig().getInt("DeleteGui.Rows", 3) * 9, ConfigUtil.translateColorLEG(getConfig().getString("DeleteGui.Title", "Homes")) + " " + home);
-
-        inventory.setItem(getConfig().getInt("DeleteGui.Items.Confirm.Slot", 11), confirmItem.toItemStack());
-        if (getConfig().getBoolean("DeleteGui.Items.Bed.Enabled", true)) {
-            inventory.setItem(getConfig().getInt("DeleteGui.Items.Bed.Slot", 13), getBedItem(home));
-        }
-        inventory.setItem(getConfig().getInt("DeleteGui.Items.Cancel.Slot", 15), cancelItem.toItemStack());
-
-        player.openInventory(inventory);
-        ConfigUtil.playSound(player, "GuiSounds.OpenSound");
-    }
-
-    private ItemUtil getConfigItem(String path) {
-        Material material = Material.valueOf(ConfigUtil.translateColorLEG(getConfig().getString(path + ".Material")));
-        String name = ConfigUtil.translateColorLEG(getConfig().getString(path + ".Name"));
-        List<String> lore = getConfig().getStringList(path + ".Lore");
-        return new ItemUtil(material).setName(name).setLore(lore.stream().map(ConfigUtil::translateColorLEG).toArray(String[]::new));
-    }
-
-    private ItemStack getSetItem(int home) {
-        return new ItemUtil(setItem).setName(setItem.getItemMeta().getDisplayName().replaceAll("%home%", String.valueOf(home))).toItemStack();
-    }
-
-    private ItemStack getUnSetItem(int home) {
-        return new ItemUtil(unSetItem).setName(unSetItem.getItemMeta().getDisplayName().replaceAll("%home%", String.valueOf(home))).toItemStack();
-    }
-
-    private ItemStack getNoPermissionItem(int home) {
-        return new ItemUtil(noPermissionItem).setName(noPermissionItem.getItemMeta().getDisplayName().replaceAll("%home%", String.valueOf(home))).toItemStack();
-    }
-
-    private ItemStack getBedItem(int home) {
-        return new ItemUtil(bedItem).setName(bedItem.getItemMeta().getDisplayName().replaceAll("%home%", String.valueOf(home))).toItemStack();
+    private ItemBuilder getConfigItem(String path) {
+        Material material = Material.valueOf(getConfig().getString(path + ".Material"));
+        String name = getConfig().getString(path + ".Name");
+        List<Component> lore = ConfigUtil.getComponentList(path + ".Lore");
+        return new ItemBuilder(material).name(name).lore(lore);
     }
 
     public int getAmount(final @NotNull Player player) {
@@ -123,5 +90,4 @@ public class Homes extends JavaPlugin {
         }
         return 1;
     }
-
 }
