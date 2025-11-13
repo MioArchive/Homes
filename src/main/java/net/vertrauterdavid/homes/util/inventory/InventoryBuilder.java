@@ -147,7 +147,7 @@ public class InventoryBuilder implements InventoryHolder {
         setItems(slots, item, null);
     }
 
-    public void setItems(final int[] slots, final @NotNull ItemStack item, final Consumer<InventoryClickEvent> handler) {
+    public void setItems(final int @NotNull [] slots, final @NotNull ItemStack item, final Consumer<InventoryClickEvent> handler) {
         for (final int slot : slots) {
             setItem(slot, item, handler);
         }
@@ -209,7 +209,7 @@ public class InventoryBuilder implements InventoryHolder {
         }
     }
 
-    public void setPlaceholders(final int... slot){
+    public void setPlaceholders(final int @NotNull ... slot){
         for(final int x : slot){
             setItem(x, ItemBuilder.item(Material.GRAY_STAINED_GLASS_PANE).tooltip(false).build(),
                     event -> event.setCancelled(true));
@@ -231,13 +231,13 @@ public class InventoryBuilder implements InventoryHolder {
         this.itemHandlers.remove(slot);
     }
 
-    public void removeItems(final int... slots) {
+    public void removeItems(final int @NotNull ... slots) {
         for (final int slot : slots) {
             removeItem(slot);
         }
     }
 
-    public @NotNull InventoryBuilder fill(final @NotNull ItemStack filler, final @NotNull String... pattern) {
+    public @NotNull InventoryBuilder fill(final @NotNull ItemStack filler, final @NotNull String @NotNull ... pattern) {
         final int rows = inventory.getSize() / 9;
         for (int row = 0; row < pattern.length && row < rows; row++) {
             final String[] rowChars = pattern[row].split(" ");
@@ -251,7 +251,7 @@ public class InventoryBuilder implements InventoryHolder {
         return this;
     }
 
-    public void fill(final @NotNull List<AbstractItem> stacks, final @NotNull String... pattern) {
+    public void fill(final @NotNull List<AbstractItem> stacks, final @NotNull String @NotNull ... pattern) {
         final int rows = inventory.getSize() / 9;
         int itemIndex = 0;
 
