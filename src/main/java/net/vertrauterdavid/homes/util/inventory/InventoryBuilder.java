@@ -1,3 +1,4 @@
+
 package net.vertrauterdavid.homes.util.inventory;
 
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.experimental.Accessors;
 import net.kyori.adventure.text.Component;
 import net.vertrauterdavid.homes.Homes;
 import net.vertrauterdavid.homes.util.ConfigUtil;
+import net.vertrauterdavid.homes.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,7 +19,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -110,14 +111,10 @@ public class InventoryBuilder implements InventoryHolder {
 
     public void setAnimatedItem(final int slot, final @NotNull ItemStack[] stacks, final int delay,
                                 final Consumer<InventoryClickEvent> handler) {
-        new BukkitRunnable() {
-            int frame = 0;
-            @Override
-            public void run() {
-                setItem(slot, stacks[frame % stacks.length], handler);
-                frame++;
-            }
-        }.runTaskTimerAsynchronously(Homes.getInstance(), 0, delay);
+        Scheduler.timer(() -> {
+            final int frame = (int) (System.currentTimeMillis() / (delay * 50)) % stacks.length;
+            setItem(slot, stacks[frame], handler);
+        }, 0, delay);
     }
 
     public void setItem(final int slot, final @NotNull ItemStack item) {
@@ -286,8 +283,7 @@ public class InventoryBuilder implements InventoryHolder {
     }
 
     public void open(final @NotNull Player player) {
-        Bukkit.getScheduler().runTask(Homes.getInstance(),
-                () -> player.openInventory(this.inventory));
+        Scheduler.runSync(() -> player.openInventory(this.inventory));
     }
 
     public int[] getBorders() {

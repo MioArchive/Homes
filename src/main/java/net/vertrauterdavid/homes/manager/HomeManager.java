@@ -2,6 +2,7 @@ package net.vertrauterdavid.homes.manager;
 
 import lombok.SneakyThrows;
 import net.vertrauterdavid.homes.Homes;
+import net.vertrauterdavid.homes.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
@@ -46,14 +47,19 @@ public class HomeManager {
 
     public void set(final @NotNull UUID uuid, int index, Location location) {
         final String string = location.getWorld().getName() + "/" + (location.getBlockX() + 0.5) + "/" + location.getBlockY() + "/" + (location.getBlockZ() + 0.5) + "/" + (Math.round(location.getYaw() / 45) * 45);
-        Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + index + "='" + string + "' WHERE UUID='" + uuid + "'");
+
         cache.put(uuid + "-" + index, string);
+
+        Scheduler.timerAsync(() -> Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + index + "='" + string + "' WHERE UUID='" + uuid + "'"), 1, 1);
     }
 
+
     public void delete(final @NotNull UUID uuid, int index) {
-        Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + index + "='-' WHERE UUID='" + uuid + "'");
         cache.put(uuid + "-" + index, "-");
+
+        Scheduler.timerAsync(() -> Homes.getInstance().getSqlConnection().update("UPDATE Homes SET Home" + index + "='-' WHERE UUID='" + uuid + "'"), 1, 1);
     }
+
 
     public @Nullable Location get(final @NotNull UUID uuid, int index) {
         String string;

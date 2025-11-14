@@ -1,5 +1,7 @@
+
 package net.vertrauterdavid.homes.util.inventory;
 
+import net.vertrauterdavid.homes.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -100,8 +102,7 @@ public final class InventoryManager {
             }
 
             if (inv.handleClose(event)) {
-                Bukkit.getScheduler().runTask(this.plugin,
-                        () -> inv.open((Player) event.getPlayer()));
+                Scheduler.runSync(() -> inv.open((Player) event.getPlayer()));
             }
         }
 
