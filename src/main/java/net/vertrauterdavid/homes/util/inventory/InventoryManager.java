@@ -77,10 +77,9 @@ public final class InventoryManager {
 
             if (inv.isSafe()) {
                 event.setCancelled(true);
-                return;
             }
 
-            if (event.getInventory().contains(event.getCurrentItem())) {
+            if (event.getClickedInventory() == inv.getInventory()) {
                 inv.handleClick(event);
             }
         }

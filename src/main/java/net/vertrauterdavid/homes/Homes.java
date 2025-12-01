@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-@Getter()
+@Getter
 public class Homes extends JavaPlugin {
 
     private ItemBuilder setItem;

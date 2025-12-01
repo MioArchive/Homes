@@ -2,6 +2,7 @@ package net.vertrauterdavid.homes.util.inventory;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.vertrauterdavid.homes.Homes;
 import net.vertrauterdavid.homes.util.ConfigUtil;
 import org.bukkit.*;
@@ -15,14 +16,11 @@ import org.bukkit.inventory.meta.*;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public class ItemBuilder {
+public class ItemBuilder implements Cloneable {
     private final ItemStack itemStack;
 
     public ItemBuilder(Material material){
@@ -50,20 +48,15 @@ public class ItemBuilder {
     }
 
     public ItemBuilder clone() {
-        try {
-            ItemBuilder clone = (ItemBuilder) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new ItemBuilder(itemStack);
+        return new ItemBuilder(itemStack.clone());
     }
 
     public ItemBuilder name(Component name) {
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta != null) {
-            itemMeta.displayName(name);
+            Component decoratedName = name.decoration(TextDecoration.ITALIC, false);
+            itemMeta.displayName(decoratedName);
         }
 
         itemStack.setItemMeta(itemMeta);
@@ -73,6 +66,7 @@ public class ItemBuilder {
     public ItemBuilder name(String name) {
         return name(ConfigUtil.translateColorCodes(name));
     }
+
 
     public ItemBuilder tooltip(boolean b){
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -168,7 +162,11 @@ public class ItemBuilder {
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta != null) {
-            itemMeta.lore(List.of(lore));
+            List<Component> decoratedLore = new ArrayList<>();
+            for (Component component : lore) {
+                decoratedLore.add(component.decoration(TextDecoration.ITALIC, false));
+            }
+            itemMeta.lore(decoratedLore);
         }
 
         itemStack.setItemMeta(itemMeta);
@@ -179,7 +177,11 @@ public class ItemBuilder {
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta != null) {
-            itemMeta.lore(lore);
+            List<Component> decoratedLore = new ArrayList<>();
+            for (Component component : lore) {
+                decoratedLore.add(component.decoration(TextDecoration.ITALIC, false));
+            }
+            itemMeta.lore(decoratedLore);
         }
 
         itemStack.setItemMeta(itemMeta);
@@ -249,11 +251,6 @@ public class ItemBuilder {
         return this;
     }
 
-    /**
-     * Sets the ItemStack to be breakable.
-     *
-     * @return This builder, for chaining
-     */
     public ItemBuilder breakable() {
         ItemMeta meta = itemStack.getItemMeta();
 
