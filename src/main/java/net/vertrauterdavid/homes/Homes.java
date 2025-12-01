@@ -10,6 +10,7 @@ import net.vertrauterdavid.homes.database.SqlConnection;
 import net.vertrauterdavid.homes.listener.PlayerJoinListener;
 import net.vertrauterdavid.homes.manager.HomeManager;
 import net.vertrauterdavid.homes.util.ConfigUtil;
+import net.vertrauterdavid.homes.util.bstats.Metrics;
 import net.vertrauterdavid.homes.util.inventory.InventoryManager;
 import net.vertrauterdavid.homes.util.inventory.ItemBuilder;
 import org.bukkit.Bukkit;
@@ -67,6 +68,9 @@ public class Homes extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), instance);
 
         HomeCommand.register();
+
+        int id = 28182;
+        new Metrics(instance, id);
     }
 
     @Override
